@@ -1,0 +1,27 @@
+{
+  "name": "permutils",
+  "version": "1.0.0",
+  "description": "Utility package for permutations, including Lehmer codes.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scmorse/permutils.git"
+  },
+  "keywords": [
+    "permutation",
+    "permute",
+    "lehmer",
+    "util",
+    "utility",
+    "utilities"
+  ],
+  "author": "Stephen Morse <stephencalebmorse@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/scmorse/permutils/issues"
+  },
+  "homepage": "https://github.com/scmorse/permutils#readme"
+}
