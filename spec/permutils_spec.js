@@ -42,6 +42,7 @@ var valid = [
 
 // Invalid permutations
 var invalid = [
+  null,
   [1],
   [0, 0],
   [1, 1],
@@ -51,6 +52,16 @@ var invalid = [
 ];
 
 describe('Test permutils', function() {
+
+  it('treeduce calculations', function() {
+    var addUp = function(a, b) {
+      return b ? a + b : a;
+    };
+    expect(permutils.treeduce([], addUp)).to.equal(undefined);
+    expect(permutils.treeduce([1, 2, 3], addUp)).to.equal(6);
+    expect(permutils.treeduce([1, 2, 3, 10], addUp)).to.equal(16);
+    expect(permutils.treeduce([1, 2, 3, 10, 1000], addUp)).to.equal(1016);
+  });
 
   it('Produces proper identity', function() {
     expect(permutils.identity(undefined)).to.satisfy(eqs([]));
@@ -86,6 +97,25 @@ describe('Test permutils', function() {
         [2, 1, 0]
       ]));
     });
+  });
+
+  it('shuffle array', function() {
+    var arr = [0, 1, 2];
+    expect(permutils.shuffle(arr)).to.equal(arr);
+    expect(permutils.shuffle(arr, false)).to.not.equal(arr);
+    expect(permutils.shuffle(null)).to.equal(undefined);
+  });
+
+  it('permutation', function() {
+    var orig = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    var res  = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    var perm = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+    _.times(perm.length-1, function() {
+      res = permutils.permutation(res, perm);
+      expect(res).to.not.satisfy(eqs(orig));
+    });
+    res = permutils.permutation(res, perm);
+    expect(res).to.satisfy(eqs(orig));
   });
 
 });
