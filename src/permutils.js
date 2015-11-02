@@ -8,17 +8,33 @@ _.isInt = function(n) {
   return _.isNumber(n) && n % 1 === 0;
 };
 
+/**
+ * Reduces the array in pairs up a tree.
+ * Ex.
+ * treeduce([1, 3, 5], function(a, b) { return b !== undefined ? a*a + b*b : a*a; })
+ * ( [1, 3, 5] )
+ * ( [10, 25] )
+ * ( [725] )
+ * > 725
+ */
 permutils.treeduce = function(arr, method) {
   if (!_.isFunction(method) || !_.isArray(arr) || arr.length === 0) {
     return;
   }
-  var result = new Array(Math.floor((arr.length + 1) / 2));
+  var result = new Array(Math.ceil(arr.length / 2));
   for (var i = 0; i < arr.length; i += 2) {
     result[i/2] = method(arr[i], (i + 1 < arr.length) ? arr[i+1] : undefined);
   }
   return result.length === 1 ? result[0] : permutils.treeduce(result, method);
 };
 
+/**
+ * Ex.
+ * > var arr = ["a", "b", "c"]
+ * > permutils.swap(arr, 0, 2)
+ * > arr
+ * [ "c", "b", "a" ]
+ */
 permutils.swap = function(arr, a, b) {
   if (!_.isArray(arr) || !_.isInt(a) || !_.isInt(b)) {
     return;
@@ -27,6 +43,7 @@ permutils.swap = function(arr, a, b) {
   arr[b] = arr[a];
   arr[a] = temp;
 };
+
 /**
  * Ex.
  * > permutils.identity(3)
@@ -34,11 +51,19 @@ permutils.swap = function(arr, a, b) {
  */
 permutils.identity = function(len){
   len = _.isInt(len) ? Math.max(len, 0) : 0;
-  return Array.apply(null, {length: len}).map(Number.call, Number);
+  var arr = new Array(len);
+  for (var i = 0; i < len; i++) {
+    arr[i] = i;
+  }
+  return arr;
 };
 
 /**
+ * Random permutation array.
  *
+ * Ex.
+ * > permutils.random(4)
+ * [ 2, 1, 3, 0 ]
  */
 permutils.random = function(len) {
   len = _.isInt(len) ? Math.max(len, 0) : 0;
@@ -70,6 +95,7 @@ permutils.shuffle = function(arr, inPlace) {
 
 /**
  * Test if a permuation array encodes a valid permutation.
+ *
  * Ex.
  * [2, 0, 1] -> true (valid)
  * Ex.
@@ -92,27 +118,43 @@ permutils.isValid = function(arr) {
 /**
  *
  */
-permutils.permutation = function(/* base, perm1, perm2, ... */) {
-  if (arguments.length <= 1) {
-    return arguments.length ? arguments[0] : [];
+permutils.permute = function(/* base, perm1, perm2, ... */) {
+  if (arguments.length < 2) {
+    return arguments.length ? arguments[0] : undefined;
   }
   var base = arguments[0];
   if (!_.isArray(base)) {
-    return base;
+    return undefined;
   }
   var perms = _.slice(arguments, 1);
   var hasSameLen = function(arr) {
     return !!arr && arr.length === base.length;
   };
-  if (!_.every(perms, permutils.isValid) || !_.every(perms, hasSameLen)) {
+  if (!_.every(perms, hasSameLen) || !_.every(perms, permutils.isValid)) {
     return base;
   }
+
   _.each(perms, function(perm) {
-    var temp = permutils.identity(perm.length);
+    var start;
+    while (true) {
+      start = start === undefined ? 0 : start + 1;
+      if (start >= perm.length) break;
+      if (perm[start] < 0) continue;
+      var curr = start, pval = perm[curr];
+
+      while (true) {
+        perm[curr] = (pval + 1) * -1;
+        if (pval === start) break;
+        permutils.swap(base, pval, curr);
+        curr = pval;
+        pval = perm[curr];
+      }
+    }
+
+    // Revert the perm elements to leave it untouched
     _.each(perm, function(p, i) {
-      temp[i] = base[p];
+      perm[i] = (perm[i] * -1) - 1;
     });
-    base = temp;
   });
   return base;
 };
