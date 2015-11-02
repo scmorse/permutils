@@ -63,6 +63,19 @@ describe('Test permutils', function() {
     expect(permutils.treeduce([1, 2, 3, 10, 1000], addUp)).to.equal(1016);
   });
 
+  it('swap works', function() {
+    var arr = ["a", "b"];
+    permutils.swap(arr, 0, 1);
+    expect(arr).to.equal(arr);
+    expect(arr).to.satisfy(eqs(["b", "a"]));
+
+    permutils.swap(arr, 1, 1);
+    expect(arr).to.satisfy(eqs(["b", "a"]));
+
+    permutils.swap(arr, 1);
+    expect(arr).to.satisfy(eqs(["b", "a"]));
+  });
+
   it('Produces proper identity', function() {
     expect(permutils.identity(undefined)).to.satisfy(eqs([]));
     expect(permutils.identity(null)).to.satisfy(eqs([]));
@@ -87,7 +100,7 @@ describe('Test permutils', function() {
   });
 
   it('Produces random permutation', function() {
-    _.times(100, function(){
+    _.times(50, function(){
       expect(permutils.random(3)).to.satisfy(one([
         [0, 1, 2],
         [0, 2, 1],
@@ -106,16 +119,20 @@ describe('Test permutils', function() {
     expect(permutils.shuffle(null)).to.equal(undefined);
   });
 
-  it('permutation', function() {
+  it('permute', function() {
     var orig = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var res  = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var perm = [1, 2, 3, 4, 5, 6, 7, 8, 0];
     _.times(perm.length-1, function() {
-      res = permutils.permutation(res, perm);
+      permutils.permute(res, perm);
       expect(res).to.not.satisfy(eqs(orig));
     });
-    res = permutils.permutation(res, perm);
+    permutils.permute(res, perm);
     expect(res).to.satisfy(eqs(orig));
+
+    expect(permutils.permute(orig)).to.equal(orig);
+    expect(permutils.permute("arg1", 1)).to.equal(undefined);
+    expect(permutils.permute(orig, [0, 1, 2])).to.equal(orig);
   });
 
 });

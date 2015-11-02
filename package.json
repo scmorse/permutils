@@ -5,7 +5,7 @@
   "main": "src/permutils.js",
   "scripts": {
     "test": "./node_modules/.bin/_mocha spec",
-    "test-coverage": "NODE_ENV=test ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- spec --recursive"
+    "test-coverage": "NODE_ENV=test ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- spec --recursive; xdg-open ./coverage/lcov-report/index.html 2> /dev/null; open ./coverage/lcov-report/index.html 2> /dev/null"
   },
   "repository": {
     "type": "git",
