@@ -4,6 +4,9 @@ var _ = require('lodash');
 var lehmer = require('./lehmer');
 var permutils = module.exports = {};
 
+/**
+ * This is on a development branch of lodash, add it here for convenience.
+ */
 _.isInt = function(n) {
   return _.isNumber(n) && n % 1 === 0;
 };
@@ -157,4 +160,24 @@ permutils.permute = function(/* base, perm1, perm2, ... */) {
     });
   });
   return base;
+};
+
+/**
+ * Ex.
+ * permutils.nextWrapping(["a", "b", "c"], "a")
+ * > "b"
+ * permutils.nextWrapping(["a", "b", "c"], "b")
+ * > "c"
+ * permutils.nextWrapping(["a", "b", "c"], "c")
+ * > "a"
+ */
+permutils.nextWrapping = function(arr, elem) {
+  if (!_.isArray(arr) || arr.length === 0) {
+    return undefined;
+  }
+  var i = arr.indexOf(elem);
+  if (i < 0) {
+    return undefined;
+  }
+  return arr[(i+1) % arr.length];
 };

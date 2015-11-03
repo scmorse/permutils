@@ -87,18 +87,6 @@ describe('Test permutils', function() {
     expect(permutils.identity(10)).to.satisfy(eqs([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
   });
 
-  it('isValid on valid permutations', function() {
-    _.each(valid, function(p){
-      expect(permutils.isValid(p)).to.equal(true);
-    });
-  });
-
-  it('isValid on invalid permutations', function() {
-    _.each(invalid, function(p){
-      expect(permutils.isValid(p)).to.equal(false);
-    });
-  });
-
   it('Produces random permutation', function() {
     _.times(50, function(){
       expect(permutils.random(3)).to.satisfy(one([
@@ -119,6 +107,18 @@ describe('Test permutils', function() {
     expect(permutils.shuffle(null)).to.equal(undefined);
   });
 
+  it('isValid on valid permutations', function() {
+    _.each(valid, function(p){
+      expect(permutils.isValid(p)).to.equal(true);
+    });
+  });
+
+  it('isValid on invalid permutations', function() {
+    _.each(invalid, function(p){
+      expect(permutils.isValid(p)).to.equal(false);
+    });
+  });
+
   it('permute', function() {
     var orig = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var res  = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -133,6 +133,15 @@ describe('Test permutils', function() {
     expect(permutils.permute(orig)).to.equal(orig);
     expect(permutils.permute("arg1", 1)).to.equal(undefined);
     expect(permutils.permute(orig, [0, 1, 2])).to.equal(orig);
+  });
+
+  it('nextWrapping', function() {
+    var base = ["a", "b", "c"];
+    expect(permutils.nextWrapping(base, "a")).to.equal("b");
+    expect(permutils.nextWrapping(base, "b")).to.equal("c");
+    expect(permutils.nextWrapping(base, "c")).to.equal("a");
+    expect(permutils.nextWrapping(base, "d")).to.equal(undefined);
+    expect(permutils.nextWrapping([], "a")).to.equal(undefined);
   });
 
 });
