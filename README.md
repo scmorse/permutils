@@ -21,3 +21,12 @@ array = ["a", "b", "c"];
 permutils.permute(array, [0, 1, 2]); // array is untouched
 permutils.permute(array, [2, 1, 0]); // array is reversed
 ```
+
+#### Testing
+
+```
+npm run test
+npm run test-coverage
+```
+
+Currently, permutils has 100% code coverage.
