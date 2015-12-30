@@ -1,6 +1,6 @@
 {
   "name": "permutils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility package for permutations, including Lehmer codes.",
   "main": "src/permutils.js",
   "scripts": {
