@@ -1,7 +1,6 @@
 "use strict";
 
 var _ = require('lodash');
-var lehmer = require('./lehmer');
 var permutils = module.exports = {};
 
 /**
@@ -119,7 +118,8 @@ permutils.isValid = function(arr) {
 };
 
 /**
- *
+ * Ex.
+ * ["a", "b", "c"], [0, 2, 1] --> ["a", "c", "b"]
  */
 permutils.permute = function(/* base, perm1, perm2, ... */) {
   if (arguments.length < 2) {
@@ -181,3 +181,121 @@ permutils.nextWrapping = function(arr, elem) {
   }
   return arr[(i+1) % arr.length];
 };
+
+/*
+ * 1 * 2 * ... * n
+ *
+ * Ex.
+ * 0 -> 1
+ * 1 -> 1
+ * 2 -> 2
+ * 3 -> 6
+ * 3 -> 6
+ */
+permutils.factorial = function(n) {
+  if (!_.isInt(n) || n < 0) {
+    throw Error("Input out of range");
+  }
+  var result = 1;
+  while (n > 0) {
+    result *= n--;
+  }
+  return result;
+};
+
+/*
+ * Encodes a permutation as an integer using Lehmer codes.
+ *
+ * Ex.
+ * [0, 1, 2] -> 0
+ * [0, 2, 1] -> 1
+ * [1, 0, 2] -> 2
+ * [1, 2, 0] -> 3
+ * [2, 0, 1] -> 4
+ * [2, 1, 0] -> 5
+ */
+permutils.factoriadic = function(arr) {
+  if (!permutils.isValid(arr)) {
+    return -1;
+  }
+  if (arr.length > 18) {
+    throw new Error('Cannot use arrays of length ' + arr.length + ', or any integer more than 18. Javascript integers only allow for up to 18! (18 factorial)');
+  }
+  arr = arr.map(_.identity);
+  var placeValue = permutils.factorial(arr.length);
+  var result = 0;
+  var val;
+  for (var i = 0; i < arr.length; i++) {
+    placeValue = placeValue / (arr.length - i);
+    val = arr[i];
+    for (var j = i + 1; j < arr.length; j++) {
+      if (arr[j] > val) {
+        arr[j]--;
+      }
+    }
+    result += placeValue * val;
+  }
+  return result;
+};
+
+/*
+ * Decodes an integer to a permutation array using Lehmer codes.
+ *
+ * 0, 3 -> [0, 1, 2]
+ * 1, 3 -> [0, 2, 1]
+ * 2, 3 -> [1, 0, 2]
+ * 3, 3 -> [1, 2, 0]
+ * 4, 3 -> [2, 0, 1]
+ * 5, 3 -> [2, 1, 0]
+ *
+ *   0, 5 -> [0, 1, 2, 3, 4]
+ *   1, 5 -> [0, 1, 2, 4, 3]
+ * ...
+ * 119, 5 -> [4, 3, 2, 1, 0]
+ */
+permutils.unfactoriadic = function(val, arrLen) {
+  if (!_.isInt(val) || !_.isInt(arrLen)) {
+    throw new Error('Must provide the encoded permutation integer and the length of permutation expected back.');
+  }
+  if (arrLen > 18) {
+    throw new Error('Cannot use arrays of length ' + arrLen + ', or any integer more than 18. Javascript integers only allow for up to 18! (18 factorial)');
+  }
+  if (val < 0 || arrLen < 0) {
+    return null;
+  }
+
+  var n = val;
+  var arr = new Array(arrLen);
+  _.times(arrLen, function(i) {
+    arr[arrLen - i - 1] = n % (i + 1);
+    n = Math.floor(n/(i+1));
+  });
+
+  for (var i = arrLen - 1; i >= 0; i--) {
+    for (var j = i+1; j < arrLen; j++) {
+      if (arr[j] >= arr[i]) {
+        arr[j]++;
+      }
+    }
+  }
+
+  return arr;
+};
+
+/*
+ * Calculates the inversion permutation. When both a permutation and its inverse has
+ * been applied to a base array, the array will be unchanged.
+ */
+permutils.inverse = function(arr) {
+  if (!_.isArray(arr) || !permutils.isValid(arr)) {
+    return null;
+  }
+
+  var res = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    res[arr[i]] = i;
+  }
+
+  return res;
+};
+

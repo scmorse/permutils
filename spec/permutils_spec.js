@@ -26,6 +26,20 @@ var one = function(arrs) {
   };
 };
 
+var calling = function(func) {
+  return {
+    withArgs: function(/* arg1, arg2, ... */) {
+      var args = _.map(arguments);
+      return function() {
+        func.apply(null, args);
+      };
+    },
+    withoutArgs: function() {
+      return func;
+    }
+  };
+};
+
 // Valid permutations
 var valid = [
   [],
@@ -51,19 +65,41 @@ var invalid = [
   [0, 14, 9, 3, 10, 23, 11, 24, -1, 8, 5, 21, 13, 15, 12, 16, 4, 1, 2, 17, 20, 19, 18, 22, 6]
 ];
 
+var outOfFactoriadicRange = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+
+var allPermsLength3 = [
+  [0, 1, 2],
+  [0, 2, 1],
+  [1, 0, 2],
+  [1, 2, 0],
+  [2, 0, 1],
+  [2, 1, 0]
+];
+
+var allPermsLength3Invs = [
+  [0, 1, 2],
+  [0, 2, 1],
+  [1, 0, 2],
+  [2, 0, 1],
+  [1, 2, 0],
+  [2, 1, 0]
+];
+
 describe('Test permutils', function() {
 
   it('treeduce calculations', function() {
-    var addUp = function(a, b) {
-      return b ? a + b : a;
+    var format = function(a, b) {
+      return "(" + (b ? a + "-" + b : a) + ")";
     };
-    expect(permutils.treeduce([], addUp)).to.equal(undefined);
-    expect(permutils.treeduce([1, 2, 3], addUp)).to.equal(6);
-    expect(permutils.treeduce([1, 2, 3, 10], addUp)).to.equal(16);
-    expect(permutils.treeduce([1, 2, 3, 10, 1000], addUp)).to.equal(1016);
+    expect(permutils.treeduce([], format)).to.equal(undefined);
+    expect(permutils.treeduce([1], format)).to.equal("(1)");
+    expect(permutils.treeduce([1, 2], format)).to.equal("(1-2)");
+    expect(permutils.treeduce([1, 2, 3], format)).to.equal("((1-2)-(3))");
+    expect(permutils.treeduce([1, 2, 3, 10], format)).to.equal("((1-2)-(3-10))");
+    expect(permutils.treeduce([1, 2, 3, 10, 1000], format)).to.equal("(((1-2)-(3-10))-((1000)))");
   });
 
-  it('swap works', function() {
+  it('swap swaps', function() {
     var arr = ["a", "b"];
     permutils.swap(arr, 0, 1);
     expect(arr).to.equal(arr);
@@ -88,15 +124,15 @@ describe('Test permutils', function() {
   });
 
   it('Produces random permutation', function() {
-    _.times(50, function(){
-      expect(permutils.random(3)).to.satisfy(one([
-        [0, 1, 2],
-        [0, 2, 1],
-        [1, 0, 2],
-        [1, 2, 0],
-        [2, 0, 1],
-        [2, 1, 0]
-      ]));
+    var hit = {};
+    _.times(75, function(){
+      var ind = _.findIndex(allPermsLength3, eqs(permutils.random(3)));
+      expect(ind).to.be.at.least(0);
+      hit["" + ind] = 1;
+    });
+
+    _.each([0, 1, 2, 3, 4, 5], function(x) {
+      expect(hit["" + x]).to.eq(1);
     });
   });
 
@@ -142,6 +178,53 @@ describe('Test permutils', function() {
     expect(permutils.nextWrapping(base, "c")).to.equal("a");
     expect(permutils.nextWrapping(base, "d")).to.equal(undefined);
     expect(permutils.nextWrapping([], "a")).to.equal(undefined);
+  });
+
+  it('factorial', function() {
+    expect(calling(permutils.factorial).withArgs(-1)).to.throw();
+    expect(calling(permutils.factorial).withArgs(1.5)).to.throw();
+    expect(permutils.factorial(0)).to.eq(1);
+    expect(permutils.factorial(1)).to.eq(1);
+    expect(permutils.factorial(2)).to.eq(2);
+    expect(permutils.factorial(3)).to.eq(6);
+    expect(permutils.factorial(4)).to.eq(24);
+  });
+
+  it('factoriadic', function() {
+    expect(permutils.factoriadic([0, 2, 2])).to.eq(-1);
+    expect(calling(permutils.factoriadic).withArgs(outOfFactoriadicRange)).to.throw();
+
+    _.each(allPermsLength3, function(x, i) {
+      var tmp = _.map(x);
+      expect(permutils.factoriadic(x)).to.eq(i);
+      expect(_.isEqual(tmp, x)).to.eq(true);
+    });
+  });
+
+  it('unfactoriadic', function() {
+    expect(calling(permutils.unfactoriadic).withoutArgs()).to.throw();
+    expect(calling(permutils.unfactoriadic).withArgs('a')).to.throw();
+    expect(calling(permutils.unfactoriadic).withArgs(1, 'a')).to.throw();
+    expect(calling(permutils.unfactoriadic).withArgs(19, 19)).to.throw();
+    expect(permutils.unfactoriadic(1, -1)).to.eq(null);
+    expect(permutils.unfactoriadic(-1, 1)).to.eq(null);
+
+    _.each(allPermsLength3, function(x, i) {
+      var tmp = _.map(x);
+      expect(permutils.unfactoriadic(i, 3)).to.satisfy(eqs(x));
+      expect(_.isEqual(tmp, x)).to.eq(true);
+    });
+  });
+
+  it('inverse', function() {
+    expect(permutils.inverse(invalid[0])).to.eq(null);
+    var base = ["a", "b", "c"];
+    _.times(6, function(i) {
+      var inst = ["a", "b", "c"];
+      var inv = permutils.inverse(allPermsLength3[i]);
+      expect(inv).to.satisfy(eqs(allPermsLength3Invs[i]));
+      expect(permutils.permute(inst, allPermsLength3[i], inv));
+    });
   });
 
 });
